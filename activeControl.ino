@@ -1,3 +1,5 @@
+// MPU6050 KALİBRASYON DEĞERLERİ ve İŞLEMLERİ ---------------> MUSTAFA ENES ÖZTÜRK, GENEL KOD --------------------------> SEMİH GENÇAY
+
 #include <Wire.h>
 #include "MPU6050_6Axis_MotionApps20.h"
 #include <ESP32Servo.h>
@@ -78,7 +80,7 @@ void setup() {
   mpu.initialize();
   pinMode(INTERRUPT_PIN, INPUT);
   Serial.println(mpu.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-  
+  // MPU6050 KALİBRASYON İŞLEMLERİ ---------------> MUSTAFA ENES ÖZTÜRK
   devStatus = mpu.dmpInitialize();
   if (devStatus == 0) {
 mpu.setXAccelOffset(4381);
@@ -126,40 +128,20 @@ void loop() {
     mpu.dmpGetQuaternion(&q, FIFOBuffer);
 
     #pragma region IMU Rotation
-    // --- YAZILIMSAL SENSÖR DÖNDÜRME İŞLEMİ BAŞLANGICI ---
-    // Quaternion değerlerini geçici değişkenlere alıyoruz
+    
     float qw = q.w;
     float qx = q.x;
     float qy = q.y;
     float qz = q.z;
     float sq2 = 0.70710678f; // Kök(2)/2 değeri (Matematiksel 90 derece dönüş sabiti)
 
-    // KARTINIZIN NASIL TAKILDIĞINA GÖRE AŞAĞIDAKİLERDEN SADECE BİRİNİ SEÇİN:
-
-    /* DURUM 1: Sensör Y ekseni etrafında 90 derece dönükse 
-      (Örn: Kart dik takılmış, Z ekseni yukarı değil ileri bakıyor) */
-    // q.w = sq2 * (qw - qy);
-    // q.x = sq2 * (qx - qz);
-    // q.y = sq2 * (qw + qy);
-    // q.z = sq2 * (qx + qz);
-
-    /* DURUM 2: Sensör X ekseni etrafında 90 derece dönükse 
-      (Örn: Kart diğer yönde dik takılmış) */
-    // q.w = sq2 * (qw - qx);
-    // q.x = sq2 * (qw + qx);
-    // q.y = sq2 * (qy + qz);
-    // q.z = sq2 * (qz - qy);
-
-    /* DURUM 3: Sensör Z ekseni etrafında 90 derece dönükse 
-      (Örn: Kart yatay ama ileri değil, sağa/sola bakıyor) */
+  
     q.w = sq2 * (qw - qz);
     q.x = sq2 * (qx + qy);
     q.y = sq2 * (qy - qx);
     q.z = sq2 * (qw + qz);
 
-    // Not: Eğer yönler tam tersi çıkarsa (90 yerine -90 gerekiyorsa), 
-    // formüllerdeki eksi (-) ve artı (+) işaretlerinin yerlerini değiştirin.
-    // --- YAZILIMSAL DÖNDÜRME İŞLEMİ BİTİŞİ ---
+  
     #pragma endregion
 
     mpu.dmpGetGravity(&gravity, &q);
